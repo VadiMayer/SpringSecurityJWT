@@ -2,18 +2,23 @@ package com.example.springsecurityjwt.security;
 
 import com.example.springsecurityjwt.service.UserService;
 import com.example.springsecurityjwt.util.JwtUtil;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.security.SignatureException;
 
 @Component
 @RequiredArgsConstructor
@@ -43,6 +48,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean validateToken(String token) {
         // Логика верификации токена
+        try {
+            String username = jwtUtil.extractUserName(token);
+            return username != null && !jwtUtil.isTokenExpired(token);
+        } catch (SignatureException e) {
+            return false;
+        }
     }
 
     private Authentication createAuthentication(String token) {
@@ -58,5 +69,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private UserDetails extractUserDetailsFromToken(String token) {
         // Логика извлечения информации о пользователе из токена
         final String userEmail = jwtUtil.extractUserName(token);
+
+        UserDetails userDetails = null;
+
+        if (StringUtils.isNotEmpty(userEmail) && SecurityContextHolder.getContext().getAuthentication() == null) {
+            userDetails = userService.userDetailsService().loadUserByUsername(userEmail);
+
+            if (jwtUtil.validateToken(token, userDetails)) {
+                SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+
+                UsernamePasswordAuthenticationToken tokenUPAT = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                tokenUPAT.setDetails(new WebAuthenticationDetailsSource());
+
+                securityContext.setAuthentication(tokenUPAT);
+
+                SecurityContextHolder.setContext(securityContext);
+
+            }
+
+        }
+
+        return userDetails;
     }
 }

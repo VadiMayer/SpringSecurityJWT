@@ -2,6 +2,7 @@ package com.example.springsecurityjwt.repository;
 
 import com.example.springsecurityjwt.model.User;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Repository;
 public class UserRepository {
     private CrudUserRepository crudUserRepository;
 
-    public User get(long id) {
-        return crudUserRepository.findById(id).orElse(null);
+    public User get(String email) {
+        return crudUserRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }

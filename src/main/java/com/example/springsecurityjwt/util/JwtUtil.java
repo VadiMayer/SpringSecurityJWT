@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    public static String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails) {
         return Jwts.builder().setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
@@ -40,7 +40,13 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(key);
     }
 
-    public static boolean validateToken(String token, UserDetails userDetails) {
+    public boolean validateToken(String token, UserDetails userDetails) {
         // Логика проверки JWT
+        final String username = extractUserName(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractClaims(token, Claims::getExpiration).before(new Date());
     }
 }
