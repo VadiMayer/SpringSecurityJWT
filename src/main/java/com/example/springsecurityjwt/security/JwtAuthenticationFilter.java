@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.security.SignatureException;
 
 @Component
 @RequiredArgsConstructor
@@ -48,12 +47,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean validateToken(String token) {
         // Логика верификации токена
-        try {
-            String username = jwtUtil.extractUserName(token);
-            return username != null && !jwtUtil.isTokenExpired(token);
-        } catch (SignatureException e) {
-            return false;
-        }
+        String username = jwtUtil.extractUserName(token);
+        return username != null && !jwtUtil.validateToken(token);
     }
 
     private Authentication createAuthentication(String token) {
