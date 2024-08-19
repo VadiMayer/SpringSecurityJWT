@@ -1,4 +1,5 @@
 DROP TABLE users IF EXISTS;
+DROP TABLE roles_users IF EXISTS;
 
 CREATE TABLE users
 (

@@ -13,4 +13,8 @@ public class UserRepository {
     public User get(String email) {
         return crudUserRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
+
+    public User create(User user) {
+        return crudUserRepository.save(user);
+    }
 }
