@@ -17,4 +17,7 @@ public class UserRepository {
     public User create(User user) {
         return crudUserRepository.save(user);
     }
+    public int size() {
+        return crudUserRepository.findAll().size();
+    }
 }

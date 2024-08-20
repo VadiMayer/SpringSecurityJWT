@@ -1,5 +1,6 @@
 package com.example.springsecurityjwt.service;
 
+import com.example.springsecurityjwt.model.User;
 import com.example.springsecurityjwt.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,6 +14,14 @@ public class UserService {
 
     private UserRepository userRepository;
 
+    public User create(User user) {
+        return userRepository.create(user);
+    }
+
+    public int size() {
+        return userRepository.size();
+    }
+
     public UserDetailsService userDetailsService() {
         return new UserDetailsService() {
             @Override
@@ -21,4 +30,6 @@ public class UserService {
             }
         };
     }
+
+
 }
