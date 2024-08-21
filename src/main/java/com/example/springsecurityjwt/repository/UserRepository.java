@@ -10,6 +10,9 @@ import org.springframework.stereotype.Repository;
 public class UserRepository {
     private CrudUserRepository crudUserRepository;
 
+    public User get(long userId) {
+        return crudUserRepository.findById(userId).orElse(null);
+    }
     public User get(String email) {
         return crudUserRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }

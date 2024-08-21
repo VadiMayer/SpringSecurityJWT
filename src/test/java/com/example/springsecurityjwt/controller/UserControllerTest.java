@@ -5,6 +5,8 @@ import com.example.springsecurityjwt.model.Role;
 import com.example.springsecurityjwt.model.User;
 import com.example.springsecurityjwt.service.AuthenticationService;
 import com.example.springsecurityjwt.service.UserService;
+import com.example.springsecurityjwt.util.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +14,17 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -32,25 +37,36 @@ public class UserControllerTest {
     @Autowired
     private UserService userService;
     @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    ObjectMapper objectMapper;
 
     @BeforeEach
     public void setUp() {
         userService.create(new User(1L, "Vadim", "vadim@gmail.com", "Vadim", Role.ADMIN));
-        userService.create(new User(1L, "Rasul", "rasul@gmail.com", "rasul", Role.USER));
+        userService.create(new User(2L, "Rasul", "rasul@gmail.com", "rasul", Role.USER));
     }
 
     @Test
     void testGetUser() throws Exception {
 
-        User user = new User();
-        user.setEmail("vadim@gmail.com");
+        User user = userService.get(1);
+
+        String token = jwtUtil.generateToken(user);
+
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword(), user.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         mockMvc.perform(get("/users")
                         .contentType("application/json")
-                        .content("{\"email\": \"vadim@gmail.com\"}"))
+                        .header("Authorization", token)
+                        .with(authentication(authToken))
+                        .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("vadim@gmail.com"));
+                .andExpect(jsonPath("$.email").value("vadim@gmail.com"));
 
         verify(userService.userDetailsService(), times(1)).loadUserByUsername(user.getEmail());
     }

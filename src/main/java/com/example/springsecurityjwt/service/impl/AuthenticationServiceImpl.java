@@ -5,10 +5,12 @@ import com.example.springsecurityjwt.model.Role;
 import com.example.springsecurityjwt.model.User;
 import com.example.springsecurityjwt.repository.UserRepository;
 import com.example.springsecurityjwt.service.AuthenticationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;

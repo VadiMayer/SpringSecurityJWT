@@ -14,6 +14,10 @@ public class UserService {
 
     private UserRepository userRepository;
 
+    public User get(long userId) {
+        return userRepository.get(userId);
+    }
+
     public User create(User user) {
         return userRepository.create(user);
     }

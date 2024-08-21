@@ -17,7 +17,7 @@ public class UserController {
 
     private final AuthenticationService authenticationService;
 
-    @GetMapping
+    @GetMapping()
     public UserDetails get(@RequestBody User user) {
         return userService.userDetailsService().loadUserByUsername(user.getUsername());
     }
