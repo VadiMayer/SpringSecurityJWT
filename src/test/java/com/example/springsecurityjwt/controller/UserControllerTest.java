@@ -62,7 +62,7 @@ public class UserControllerTest {
 
         mockMvc.perform(get("/users")
                         .contentType("application/json")
-                        .header("Authorization", token)
+                        .header("Authorization", "Bearer " + token)
                         .with(authentication(authToken))
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isOk())

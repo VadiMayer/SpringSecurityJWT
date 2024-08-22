@@ -3,13 +3,12 @@ package com.example.springsecurityjwt.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.io.Encoders;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -37,10 +36,14 @@ public class JwtUtil {
     }
 
     private static Key getSignKey() {
-        Key keyGenerate = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-        String base64Key = Encoders.BASE64.encode(keyGenerate.getEncoded());
-        byte[] key = Decoders.BASE64.decode(base64Key);
-        return Keys.hmacShaKeyFor(key);
+        try {
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
+            keyPairGenerator.initialize(256);
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            return keyPair.getPrivate();
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка генерации ключа", e);
+        }
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
